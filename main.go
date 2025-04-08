@@ -7,11 +7,6 @@ import (
 )
 
 func main() {
-	// Initialize database
-
-	// config.InitDB()
-	// defer config.DB.Close()
-
 	// Setup all routes
 	routes.SetupRoutes()
 

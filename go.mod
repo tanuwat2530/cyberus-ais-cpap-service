@@ -4,7 +4,10 @@ go 1.22.2
 
 replace CyberusGolangShareLibDB => ../cyberus-common-library
 
-require CyberusGolangShareLibDB v1.0.3
+require (
+	CyberusGolangShareLibDB v1.0.3
+	github.com/google/uuid v1.6.0
+)
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect

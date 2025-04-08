@@ -4,36 +4,50 @@ import (
 	"CyberusGolangShareLibDB/postgresql_db"
 	"CyberusGolangShareLibDB/redis_db"
 	"log"
+	"strconv"
 	"time"
 
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 // Struct to map the expected JSON fields
 type WapRedirectRequest struct {
-	IDPartner    string `json:"id_partner"`
-	RefIDPartner string `json:"refid_partner"`
+	IdPartner    string `json:"id_partner"`
+	RefIdPartner string `json:"refid_partner"`
 	MediaPartner string `json:"media_partner"`
 	NamePartner  string `json:"name_partner"`
 }
 
-func WapRedirectProcess(r *http.Request) map[string]string {
+func WapRedirectProcessRequest(r *http.Request) map[string]string {
 
+	// Get current time
+	now := time.Now()
+	// Unix timestamp in nanoseconds
+	timestamp := (now.UnixNano())
+	nano_timestamp := strconv.FormatInt(timestamp, 10)
+
+	// Generate a random UUID (UUID v4)
+	transaction_id := uuid.New().String()
+
+	// Get a Client IP address
 	ip := r.RemoteAddr
+
 	fmt.Println("ClientIP : " + ip)
 
 	postgresql_db.ConnectDB()
 	redis_db.ConnectRedis()
 
-	key := "mykey"
-	value := "This is a value with TTL"
-	ttl := 1 * time.Hour // expires in 10 seconds
+	redis_key := transaction_id
+	redis_value := transaction_id
+	ttl := 1 * time.Hour // expires in 1 Hour
 
 	// Set key with TTL
-	if err := redis_db.SetWithTTL(key, value, ttl); err != nil {
+	if err := redis_db.SetWithTTL(redis_key, redis_value, ttl); err != nil {
 		//write to file if Redis problem or forward request to AIS
 		log.Fatalf("SetWithTTL error: %v", err)
 	}
@@ -49,9 +63,12 @@ func WapRedirectProcess(r *http.Request) map[string]string {
 
 	//redis_db.Set("aaa", "AAA", 300)
 	res := map[string]string{
-		"code":    "0",
-		"message": "success",
+		"code":           "0",
+		"message":        "retrieved",
+		"timestamp":      nano_timestamp,
+		"transaction_id": transaction_id,
 	}
+
 	// Read the request body
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -70,8 +87,8 @@ func WapRedirectProcess(r *http.Request) map[string]string {
 
 	// Print the data to the console
 	fmt.Println("##### Received WAP Redirect Data #####")
-	fmt.Println("IDPartner : " + requestData.IDPartner)
-	fmt.Println("RefIDPartner : " + requestData.RefIDPartner)
+	fmt.Println("IDPartner : " + requestData.IdPartner)
+	fmt.Println("RefIDPartner : " + requestData.RefIdPartner)
 	fmt.Println("MediaPartner  : " + requestData.MediaPartner)
 	fmt.Println("NamePartner  : " + requestData.NamePartner)
 
