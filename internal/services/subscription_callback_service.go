@@ -28,6 +28,7 @@ type SubscriptionCallbackRequest struct {
 	RefId     string `json:"refid"`
 	Media     string `json:"media"`
 	Token     string `json:"token"`
+	ClientId  string `json:"clientid"`
 }
 
 func SubscriptionCallbackProcessRequest(r *http.Request) map[string]string {
@@ -59,6 +60,7 @@ func SubscriptionCallbackProcessRequest(r *http.Request) map[string]string {
 	// Add ClientIP to Payload
 	payload["ClientIP"] = string(ip)
 	payload["ProviderUrl"] = "https://cpdomain.com/cp/aoc/subscription/callback/url"
+	payload["RedisKey"] = transaction_id
 
 	// Convert the struct to JSON string
 	payloadBytes, err := json.Marshal(payload)
@@ -67,7 +69,7 @@ func SubscriptionCallbackProcessRequest(r *http.Request) map[string]string {
 	}
 
 	payloadString := string(payloadBytes)
-	redis_key := transaction_id
+	redis_key := "subscription-callback:" + transaction_id
 	ttl := 24 * time.Hour // expires in 1 Hour
 
 	// Set key with TTL
