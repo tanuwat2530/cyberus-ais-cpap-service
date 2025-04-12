@@ -1,134 +1,129 @@
 package services
 
 import (
-	"CyberusGolangShareLibDB/postgresql_db"
 	"CyberusGolangShareLibDB/redis_db"
-	"log"
-	"strconv"
-	"time"
-
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"net/http"
-
-	"github.com/google/uuid"
+	"time"
 )
 
 // Struct to map the expected JSON fields
 type SubscriptionCallbackRequest struct {
 	Msisdn    string `json:"msisdn"`
-	Shortcode string `json:"shortcode"`
+	Shortcode string `json:"short-code"`
 	Operator  string `json:"operator"`
 	Action    string `json:"action"`
 	Code      string `json:"code"`
 	Desc      string `json:"desc"`
-	Timestamp string `json:"timestamp"`
-	TranRef   string `json:"tranref"`
-	RefId     string `json:"refid"`
+	Timestamp int    `json:"timestamp"`
+	TranRef   string `json:"tran-ref"`
+	RefId     string `json:"ref-id"`
 	Media     string `json:"media"`
 	Token     string `json:"token"`
-	ClientId  string `json:"clientid"`
 }
 
 func SubscriptionCallbackProcessRequest(r *http.Request) map[string]string {
 
-	// Get current time
-	now := time.Now()
-	// Unix timestamp in nanoseconds
-	timestamp := (now.UnixNano())
-	nano_timestamp := strconv.FormatInt(timestamp, 10)
-
 	// Generate a random UUID (UUID v4)
-	transaction_id := uuid.New().String()
+	//transaction_id := uuid.New().String()
 
-	// Get a Client IP address
-	ip := r.RemoteAddr
-
-	fmt.Println("ClientIP : " + ip)
-
-	postgresql_db.ConnectDB()
-	redis_db.ConnectRedis()
+	res := map[string]string{}
 
 	var payload map[string]interface{}
-	err := json.NewDecoder(r.Body).Decode(&payload)
-	if err == nil {
+	errPayload := json.NewDecoder(r.Body).Decode(&payload)
+	if errPayload != nil {
 		// Example: print the values
-		fmt.Printf("Received: %+v\n", payload)
+		//fmt.Println("Error decode Json to map[string]interface{} :", errPayload.Error())
+
+		res["code"] = "-1"
+		res["desc"] = "JSON Decode error"
+		res["ref-id"] = "undefined"
+		res["tran-ref"] = "undefined"
+		res["media"] = "undefined"
+		return res
 	}
 
-	// Add ClientIP to Payload
-	payload["ClientIP"] = string(ip)
-	payload["ProviderUrl"] = "https://cpdomain.com/cp/aoc/subscription/callback/url"
-	payload["RedisKey"] = transaction_id
+	jsonData, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		//fmt.Println("Error marshalling JSON:", err.Error())
+		res["code"] = "-2"
+		res["desc"] = "JSON Marshalling error"
+		res["ref-id"] = "undefined"
+		res["tran-ref"] = "undefined"
+		res["media"] = "undefined"
+		return res
+	}
 
+	// // Unmarshal JSON into struct
+	var requestData SubscriptionCallbackRequest
+	err = json.Unmarshal(jsonData, &requestData)
+	if err != nil {
+		//fmt.Println("Error map Json to Struct :" + err.Error())
+		//fmt.Println("Error marshalling JSON:", err.Error())
+		res["code"] = "-3"
+		res["desc"] = "JSON Struct error"
+		res["ref-id"] = "undefined"
+		res["tran-ref"] = "undefined"
+		res["media"] = "undefined"
+		return res
+	}
+
+	// // Print the data to the console
+	// fmt.Println("##### Received Subscription Callback Data #####")
+	// fmt.Println("IDPartner : " + requestData.Msisdn)
+	// fmt.Println("Shortcode : " + requestData.Shortcode)
+	// fmt.Println("Operator  : " + requestData.Operator)
+	// fmt.Println("Action  : " + requestData.Action)
+	// fmt.Println("Code  : " + requestData.Code)
+	// fmt.Println("Desc  : " + requestData.Desc)
+	// fmt.Println("Timestamp  : " + strconv.FormatInt(requestData.Timestamp))
+	// fmt.Println("TranRef  : " + requestData.TranRef)
+	// fmt.Println("Action  : " + requestData.Action)
+	// fmt.Println("RefId  : " + requestData.RefId)
+	// fmt.Println("Media  : " + requestData.Media)
+	// fmt.Println("Token  : " + requestData.Token)
+
+	// // Add ClientIP to Payload
+	payload["cuberus-return"] = "200"
 	// Convert the struct to JSON string
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		fmt.Printf("Failed to convert payload to JSON:  %+v\n ", http.StatusInternalServerError)
+		fmt.Println("Error marshalling JSON:", err.Error())
+		res["code"] = "-4"
+		res["desc"] = "Additional value error"
+		res["ref-id"] = requestData.RefId
+		res["tran-ref"] = requestData.TranRef
+		res["media"] = requestData.Media
+		return res
 	}
 
 	payloadString := string(payloadBytes)
-	redis_key := "subscription-callback:" + transaction_id
+	redis_key := "subscription-callback-api:" + requestData.Media + ":" + requestData.RefId
 	ttl := 24 * time.Hour // expires in 1 Hour
 
-	// Set key with TTL
+	redis_db.ConnectRedis()
+	// // Set key with TTL
 	if err := redis_db.SetWithTTL(redis_key, payloadString, ttl); err != nil {
 		//write to file if Redis problem or forward request to AIS
 		log.Fatalf("SetWithTTL error: %v", err)
-	}
-	fmt.Println("Key set successfully with TTL")
-
-	// Get the key
-	// val, err := redis_db.GetValue(key)
-	// if err != nil {
-	// 	log.Printf("GetValue error: %v", err)
-	// } else {
-	// 	fmt.Printf("Retrieved value: %s\n", val)
-	// }
-
-	//redis_db.Set("aaa", "AAA", 300)
-	res := map[string]string{
-		"code":           "0",
-		"message":        "retrieved",
-		"timestamp":      nano_timestamp,
-		"transaction_id": transaction_id,
-	}
-
-	// Read the request body
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		//http.Error(w, "Failed to read body", http.StatusBadRequest)
-		return res
-	}
-	defer r.Body.Close()
-
-	// Unmarshal JSON into struct
-	var requestData SubscriptionCallbackRequest
-	err = json.Unmarshal(body, &requestData)
-	if err != nil {
-		//http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		fmt.Println("Error marshalling JSON:", err.Error())
+		res["code"] = "-5"
+		res["desc"] = "Save process error"
+		res["ref-id"] = requestData.RefId
+		res["tran-ref"] = requestData.TranRef
+		res["media"] = requestData.Media
 		return res
 	}
 
-	// Print the data to the console
-	fmt.Println("##### Received Subscription Callback Data #####")
-	fmt.Println("IDPartner : " + requestData.Msisdn)
-	fmt.Println("Shortcode : " + requestData.Shortcode)
-	fmt.Println("Operator  : " + requestData.Operator)
-	fmt.Println("Action  : " + requestData.Action)
-	fmt.Println("Code  : " + requestData.Code)
-	fmt.Println("Desc  : " + requestData.Desc)
-	fmt.Println("Timestamp  : " + requestData.Timestamp)
-	fmt.Println("TranRef  : " + requestData.TranRef)
-	fmt.Println("Action  : " + requestData.Action)
-	fmt.Println("RefId  : " + requestData.RefId)
-	fmt.Println("Media  : " + requestData.Media)
-	fmt.Println("Token  : " + requestData.Token)
-
-	// Respond to client
-	//w.WriteHeader(http.StatusOK)
-	//w.Write([]byte("WAP Redirect received successfully"))
+	//fmt.Println("##### Process completed #####")
+	res["code"] = "200"
+	res["desc"] = "Success"
+	res["ref-id"] = requestData.RefId
+	res["tran-ref"] = requestData.TranRef
+	res["media"] = requestData.Media
 
 	return res
 }
