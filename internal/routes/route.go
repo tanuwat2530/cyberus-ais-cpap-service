@@ -10,6 +10,7 @@ func SetupRoutes() {
 	// Register routes using http.HandleFunc
 	http.HandleFunc("/api/wap-redirect", controllers.WapRedirect)
 	http.HandleFunc("/api/subscription-callback", controllers.SubscriptionCallback)
+	http.HandleFunc("/api/transaction-callback", controllers.TransactionCallback)
 	http.HandleFunc("/api/", HomeHandler)
 }
 
