@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	services "CyberusAisCpapBackend/internal/services"
-	utils "CyberusAisCpapBackend/internal/utils/response"
+	services "cyberus/ais-cacp-service/internal/services"
+	utils "cyberus/ais-cacp-service/internal/utils/response"
 
 	"net/http"
 )

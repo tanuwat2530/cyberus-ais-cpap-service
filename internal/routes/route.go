@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"CyberusAisCpapBackend/internal/controllers"
+	"cyberus/ais-cacp-service/internal/controllers"
 	"net/http"
 )
 
