@@ -1,7 +1,7 @@
 package main
 
 import (
-	"CyberusAisCpapBackend/internal/routes"
+	"cyberus/ais-cacp-service/internal/routes"
 	"fmt"
 	"net/http"
 )
