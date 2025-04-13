@@ -1,4 +1,4 @@
-module CyberusAisCpapBackend
+module cyberus/ais-cacp-service
 
 go 1.22.2
 
