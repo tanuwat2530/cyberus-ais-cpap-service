@@ -86,7 +86,7 @@ func SubscriptionCallbackProcessRequest(r *http.Request) map[string]string {
 	// fmt.Println("Token  : " + requestData.Token)
 
 	// // Add ClientIP to Payload
-	payload["cuberus-return"] = "200"
+	payload["cyberus-return"] = "200"
 	// Convert the struct to JSON string
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
