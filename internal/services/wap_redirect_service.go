@@ -1,8 +1,8 @@
 package services
 
 import (
-	"CyberusGolangShareLibDB/postgresql_db"
-	"CyberusGolangShareLibDB/redis_db"
+	"CyberusGolangShareLibrary/postgresql_db"
+	"CyberusGolangShareLibrary/redis_db"
 	"log"
 	"strconv"
 	"time"

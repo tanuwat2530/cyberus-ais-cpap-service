@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"CyberusGolangShareLibrary/utilities"
 	services "cyberus/ais-cacp-service/internal/services"
-	utils "cyberus/ais-cacp-service/internal/utils/response"
 
 	"net/http"
 )
@@ -16,5 +16,5 @@ func WapRedirect(w http.ResponseWriter, r *http.Request) {
 
 	response := services.WapRedirectProcessRequest(r)
 
-	utils.ResponseWithJSON(w, http.StatusOK, response)
+	utilities.ResponseWithJSON(w, http.StatusOK, response)
 }

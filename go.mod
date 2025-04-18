@@ -2,10 +2,10 @@ module cyberus/ais-cacp-service
 
 go 1.22.2
 
-replace CyberusGolangShareLibDB => ../cyberus-common-library
+replace CyberusGolangShareLibrary => ../cyberus-common-library
 
 require (
-	CyberusGolangShareLibDB v1.0.3
+	CyberusGolangShareLibrary v1.1.2
 	github.com/google/uuid v1.6.0
 )
 

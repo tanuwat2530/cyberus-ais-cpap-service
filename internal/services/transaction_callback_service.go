@@ -1,7 +1,7 @@
 package services
 
 import (
-	"CyberusGolangShareLibDB/redis_db"
+	"CyberusGolangShareLibrary/redis_db"
 	"encoding/json"
 	"fmt"
 	"log"
