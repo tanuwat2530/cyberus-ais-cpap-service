@@ -39,7 +39,19 @@ func WapRedirectProcessRequest(r *http.Request) map[string]string {
 
 	fmt.Println("ClientIP : " + ip)
 
-	postgresql_db.ConnectDB()
+	dns := "host=localhost user=root password=11111111 dbname=cyberus_db port=5432 sslmode=disable TimeZone=Asia/Bangkok search_path=root@cyberus"
+	// Init database
+	postgresDB, sqlConfig, err := postgresql_db.PostgreSqlInstance(dns)
+	if err != nil {
+		panic(err)
+	}
+	// Test connection
+	err = sqlConfig.Ping()
+	if err != nil {
+		fmt.Println(err)
+	}
+	postgresDB.DB()
+
 	redis_db.ConnectRedis()
 
 	redis_key := transaction_id
