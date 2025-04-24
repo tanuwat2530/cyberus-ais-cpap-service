@@ -8,10 +8,10 @@ import (
 // SetupRoutes registers all application routes
 func SetupRoutes() {
 	// Register routes using http.HandleFunc
-	http.HandleFunc("/api/wap-redirect", controllers.WapRedirect)
-	http.HandleFunc("/api/subscription-callback", controllers.SubscriptionCallback)
-	http.HandleFunc("/api/transaction-callback", controllers.TransactionCallback)
-	http.HandleFunc("/api/", HomeHandler)
+	http.HandleFunc("/ais/wap-redirect", controllers.WapRedirect)
+	http.HandleFunc("/ais/subscription-callback", controllers.SubscriptionCallback)
+	http.HandleFunc("/ais/transaction-callback", controllers.TransactionCallback)
+	http.HandleFunc("/ais/", HomeHandler)
 }
 
 // HomeHandler for root endpoint
