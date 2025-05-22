@@ -11,8 +11,8 @@ func main() {
 	routes.SetupRoutes()
 
 	// Start the server on port 8080
-	fmt.Println("Starting cyberus-ais-cpap-service server on port 8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	fmt.Println("Starting cyberus-ais-cpap-service server on port 4001...")
+	if err := http.ListenAndServe(":4001", nil); err != nil {
 		fmt.Println("Error starting server:", err)
 	}
 

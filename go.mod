@@ -5,7 +5,7 @@ go 1.22.2
 replace CyberusGolangShareLibrary => ../cyberus-common-library
 
 require (
-	CyberusGolangShareLibrary v1.2.0
+	CyberusGolangShareLibrary v1.2.2
 	github.com/google/uuid v1.6.0
 )
 
